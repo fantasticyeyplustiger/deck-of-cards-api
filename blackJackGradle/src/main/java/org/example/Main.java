@@ -1,6 +1,7 @@
 package org.example;
 
 import com.google.gson.*;
+import com.google.gson.internal.bind.util.ISO8601Utils;
 
 import java.io.*;
 import java.net.URL;
@@ -11,63 +12,159 @@ import java.util.Scanner;
 public class Main {
 
     public static Deck deck;
-    public static LinkedList<Card> cards = new LinkedList<>();
+    public static LinkedList<Card> playerCards = new LinkedList<>();
     public static GsonBuilder builder = new GsonBuilder();
+    public static Gson gson;
+    public static Scanner scan = new Scanner(System.in);
+
     public static double money = 250.0;
-    public static double betting_power = 1;
+    public static double bettingMoney;
+    public static double betting_power = 2;
 
     public static void main(String[] args) {
 
         builder.setPrettyPrinting();
-
-        Gson gson = builder.create();
-
-        System.out.println("start gambling buddy\n");
+        gson = builder.create();
 
         Scanner shuffledDeckScan = new Scanner(getShuffledDeck());
         String shuffledDeck = shuffledDeckScan.useDelimiter("\\A").next();
 
         deck = gson.fromJson(shuffledDeck, Deck.class);
 
-        Card card = getCard();
+        play();
+    }
 
-        cards.add(card);
-        System.out.println(gson.toJson(card));
+    private static void play(){
 
-        //Card card = gson.fromJson(newCard, Card.class);
-        //cards.add(card);
+        Enemy enemy = new Enemy();
 
-        //System.out.println(gson.toJson(card));
+        playerCards.add(getCard());
+        enemy.cards.add(getCard());
+        playerCards.add(getCard());
+        enemy.cards.add(getCard());
+
+        System.out.println("Welcome to Blackjack!");
+        System.out.println("In this game, you have to get as close to 21 as possible without going over 21!");
+        System.out.println("How much would you like to bet?\n");
+
+        System.out.println("Your money: " + money);
+
+        bettingMoney = getBettingMoney();
+
+        System.out.println("Okay! Let's Play!\n");
+
+        boolean playerLoss;
+        boolean enemyLoss;
+
+        while(true){
+
+            playerLoss = checkIfOver21(playerCards);
+            enemyLoss = checkIfOver21(enemy.cards);
+
+            if(playerLoss){
+                System.out.println("Loser.");
+            }
+            else if(enemyLoss){
+                System.out.println("Oh. You won.");
+            }
+
+            System.out.println("Your cards!\n");
+
+            printCards(playerCards);
+
+            System.out.println("Their cards!\n");
+
+            printCards(enemy.cards);
+
+            System.out.println("Add another card?\n[YES, NO]");
+
+            if(scan.nextLine().equalsIgnoreCase("Yes")){
+                System.out.println("Excellent!");
+                playerCards.add(getCard());
+            }
+
+        }
 
     }
 
-    private static Card getCard(){
+    private static boolean checkIfOver21(LinkedList<Card> cards){
+        int totalValue = 0;
+        for(Card card : cards){
+            try{
+                totalValue += Integer.parseInt(card.value);
+            }
+            catch (NumberFormatException e) {
+                totalValue += 10;
+            }
+        }
 
-        Card card = new Card();
-        JsonElement[] elements = new JsonElement[4];
+        return totalValue > 21;
+    }
+
+    public static void printCards(LinkedList<Card> cards){
+        for (Card card : cards) {
+            System.out.println(card.code + ", " + card.value);
+        }
+    }
+
+    private static double getBettingMoney(){
+        while(true){
+            try{
+                double returningBettingMoney = Double.parseDouble(scan.nextLine());
+
+                if(returningBettingMoney > money){
+                    System.out.println("Too high! Don't bet imaginary money in this casino!");
+                }
+                else if(returningBettingMoney <= 0){
+                    System.out.println("Too low! You aren't in debt just yet!");
+                }
+                else{
+                    return returningBettingMoney;
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Not a number! Try again!");
+            }
+        }
+    }
+
+    private static Card getCard(){
 
         Scanner cardScan = new Scanner(getCardDetails());
         String newCard = cardScan.useDelimiter("\\A").next();
 
         JsonElement rootNode = JsonParser.parseString(newCard);
 
-        System.out.println(rootNode);
-
         JsonObject deckDetails = rootNode.getAsJsonObject();
         JsonArray cardDetails = deckDetails.getAsJsonArray("cards");
 
-        System.out.println(cardDetails);
+        String cardValues = String.valueOf(cardDetails);
+        cardValues = removeBrackets(cardValues); //converts it from a json array to a json object
 
-        for (int i = 0; i < cardDetails.size(); i++) {
-            elements[i] = cardDetails.get(i);
+        return gson.fromJson(cardValues, Card.class);
+    }
+
+    /**
+     * Removes brackets from a String.
+     * @param string The String having brackets removed.
+     * @return The string without brackets.
+     */
+    private static String removeBrackets(String string){
+
+        StringBuilder returningString = new StringBuilder();
+
+        for (int i = 0; i < string.length(); i++) {
+
+            char letter = string.charAt(i);
+
+            if(letter == '[' || letter == ']'){
+                continue;
+            }
+
+            returningString.append(letter);
         }
 
-        card.code = elements[0].getAsString();
-        card.image = elements[1].getAsString();
-        card.value = elements[2].getAsString();
-        card.suit = elements[3].getAsString();
-
-        return card;
+        return String.valueOf(returningString);
     }
 
     private static InputStream getCardDetails(){
@@ -86,7 +183,7 @@ public class Main {
     public static InputStream getShuffledDeck() {
         try {
             URLConnection url = new URL("https://www.deckofcardsapi.com/" +
-                    "api/deck/new/shuffle/?deck_count=1").openConnection();
+                    "api/deck/new/shuffle/?deck_count=6").openConnection();
 
             return url.getInputStream();
 
