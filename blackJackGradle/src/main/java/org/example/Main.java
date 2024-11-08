@@ -43,15 +43,15 @@ public class Main {
         playerCards.add(getCard());
         enemy.cards.add(getCard());
 
-        System.out.println("Welcome to Blackjack!");
-        System.out.println("In this game, you have to get as close to 21 as possible without going over 21!");
-        System.out.println("How much would you like to bet?\n");
+        System.out.println("welcome to blackjack.");
+        System.out.println("in this game, you have to get as close to 21 as possible without going over 21.");
+        System.out.println("how much would you like to bet?\n");
 
-        System.out.println("Your money: " + money);
+        System.out.println("your money: " + money);
 
         bettingMoney = getBettingMoney();
 
-        System.out.println("Okay! Let's Play!\n");
+        System.out.println("ok\n");
 
         boolean playerLoss;
         boolean enemyLoss;
@@ -62,26 +62,28 @@ public class Main {
             enemyLoss = checkIfOver21(enemy.cards);
 
             if(playerLoss){
-                System.out.println("Loser.");
+                System.out.println("loser");
             }
             else if(enemyLoss){
-                System.out.println("Oh. You won.");
+                System.out.println("gg");
             }
 
-            System.out.println("Your cards!\n");
+            System.out.println("your cards\n");
 
             printCards(playerCards);
 
-            System.out.println("Their cards!\n");
+            System.out.println("their cards\n");
 
             printCards(enemy.cards);
 
-            System.out.println("Add another card?\n[YES, NO]");
+            System.out.println("add another card?\n[YES, NO]");
 
             if(scan.nextLine().equalsIgnoreCase("Yes")){
-                System.out.println("Excellent!");
+                System.out.println("ok!");
                 playerCards.add(getCard());
             }
+
+            enemy.cards.add(getCard());
 
         }
 
@@ -113,17 +115,17 @@ public class Main {
                 double returningBettingMoney = Double.parseDouble(scan.nextLine());
 
                 if(returningBettingMoney > money){
-                    System.out.println("Too high! Don't bet imaginary money in this casino!");
+                    System.out.println("you don't have that much money.");
                 }
                 else if(returningBettingMoney <= 0){
-                    System.out.println("Too low! You aren't in debt just yet!");
+                    System.out.println("ah, yes, betting negative money.");
                 }
                 else{
                     return returningBettingMoney;
                 }
 
             } catch (NumberFormatException e) {
-                System.out.println("Not a number! Try again!");
+                System.out.println("what?");
             }
         }
     }
