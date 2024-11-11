@@ -1,8 +1,9 @@
 package org.example;
 
 import com.google.gson.*;
-import com.google.gson.internal.bind.util.ISO8601Utils;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -17,11 +18,14 @@ public class Main {
     public static Gson gson;
     public static Scanner scan = new Scanner(System.in);
 
+    public static GUI window = new GUI();
+
     public static double money = 250.0;
     public static double bettingMoney;
-    public static double betting_power = 2;
 
     public static void main(String[] args) {
+
+        window.hitButton.addActionListener(e -> hit());
 
         builder.setPrettyPrinting();
         gson = builder.create();
@@ -30,12 +34,17 @@ public class Main {
         String shuffledDeck = shuffledDeckScan.useDelimiter("\\A").next();
 
         deck = gson.fromJson(shuffledDeck, Deck.class);
-
-        play();
     }
 
     private static void play(){
 
+        //hitButton.addActionListener(e -> hit());
+        //standButton.addActionListener(e -> stand());
+        //doubleButton.addActionListener(e -> doubleBet());
+        //splitButton.addActionListener(e -> split());
+
+
+        /*
         Enemy enemy = new Enemy();
 
         playerCards.add(getCard());
@@ -53,20 +62,8 @@ public class Main {
 
         System.out.println("ok\n");
 
-        boolean playerLoss;
-        boolean enemyLoss;
 
         while(true){
-
-            playerLoss = checkIfOver21(playerCards);
-            enemyLoss = checkIfOver21(enemy.cards);
-
-            if(playerLoss){
-                System.out.println("loser");
-            }
-            else if(enemyLoss){
-                System.out.println("gg");
-            }
 
             System.out.println("your cards\n");
 
@@ -85,11 +82,28 @@ public class Main {
 
             enemy.cards.add(getCard());
 
+            roundIsOver(enemy);
+
         }
+         */
 
     }
 
-    private static boolean checkIfOver21(LinkedList<Card> cards){
+    private static void hit(){
+
+        playerCards.add(getCard());
+        Image image = playerCards.getLast().getCardImage();
+        window.addCardImageToBottom(image);
+
+    }
+
+
+    private static void roundIsOver(Enemy enemy, int currentRound){
+        int playerStatus = getTotalValue(playerCards);
+        int enemyStatus = getTotalValue(enemy.cards);
+    }
+
+    private static int getTotalValue(LinkedList<Card> cards){
         int totalValue = 0;
         for(Card card : cards){
             try{
@@ -100,7 +114,8 @@ public class Main {
             }
         }
 
-        return totalValue > 21;
+        return totalValue;
+
     }
 
     public static void printCards(LinkedList<Card> cards){
