@@ -7,7 +7,7 @@ public class Dealer extends Player {
     }
 
     /**
-     * Checks if the Dealer has to hit or stand by seeing
+     * Checks if the {@link Dealer} has to hit or stand by seeing
      * if the total value of all its {@link Card}s is less than 17.
      * @return true if the total value is less than 17; false otherwise.
      */
