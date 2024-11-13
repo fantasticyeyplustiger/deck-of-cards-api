@@ -1,0 +1,49 @@
+Execution failed for task ':org.example.Main.main()'.
+> Build cancelled while executing task ':org.example.Main.main()'
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+BUILD FAILED in 12m 37s
+2 actionable tasks: 2 executed
+Build operation 'Build finished for file system watching' started
+Completing Build operation 'Build finished for file system watching'
+Build operation 'Build finished for file system watching' completed
+Releasing file lock for cache directory md-supplier (C:\Users\ty4000\.gradle\caches\8.8\md-supplier)
+Releasing lock on cache directory md-supplier (C:\Users\ty4000\.gradle\caches\8.8\md-supplier).
+Changing state to: ABORTED
+Process 'command 'C:\Program Files\Microsoft\jdk-21.0.4.7-hotspot\bin\java.exe'' finished with exit value 1 (state: ABORTED)
+Cancel: daemon is busy, sleeping until state changes.
+Releasing file lock for execution history cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\executionHistory)
+Closing cache executionHistory.bin (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\executionHistory\executionHistory.bin)
+Releasing lock on execution history cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\executionHistory).
+Releasing file lock for Build Output Cleanup Cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\buildOutputCleanup)
+Closing cache outputFiles.bin (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\buildOutputCleanup\outputFiles.bin)
+Releasing lock on Build Output Cleanup Cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\buildOutputCleanup).
+Releasing file lock for cache directory md-rule (C:\Users\ty4000\.gradle\caches\8.8\md-rule)
+Releasing lock on cache directory md-rule (C:\Users\ty4000\.gradle\caches\8.8\md-rule).
+Resolution result cache closed. Cache reads: 0, disk reads: 0 (avg: 0.0 secs, total: 0.0 secs)
+Resolution result cache closed. Cache reads: 0, disk reads: 0 (avg: 0.0 secs, total: 0.0 secs)
+Deleted 6 resolution results binary files in 0.002 secs
+Completing Build operation 'Run build'
+Build operation 'Run build' completed
+Daemon worker: released lock on worker lease
+Stopping 0 deployment handles
+Stopped deployment handles
+Releasing file lock for file hash cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\fileHashes)
+Closing cache fileHashes.bin (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\fileHashes\fileHashes.bin)
+Closing cache resourceHashesCache.bin (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\fileHashes\resourceHashesCache.bin)
+Releasing lock on file hash cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\fileHashes).
+Releasing file lock for checksums cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\checksums)
+Releasing lock on checksums cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\checksums).
+VCS Checkout Cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\vcs-1) has last been fully cleaned up 1 hours ago
+Cache VCS Checkout Cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\vcs-1) was closed 0 times.
+Cache VCS metadata (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\vcsMetadata) was closed 0 times.
+Cache Compressed Files Expansion Cache (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\expanded) was closed 0 times.
+dependencies-accessors (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\dependencies-accessors) has last been fully cleaned up 1 hours ago
+Cache dependencies-accessors (C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle\8.8\dependencies-accessors) was closed 0 times.
+Build operation 'Deleting unused version-specific caches in C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle' started
+Completing Build operation 'Deleting unused version-specific caches in C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle'
+Build operation 'Deleting unused version-specific caches in C:\Users\ty4000\Documents\GitHub\deck-of-cards-api\blackJackGradle\.gradle' completed
+The daemon has finished executing the build.
