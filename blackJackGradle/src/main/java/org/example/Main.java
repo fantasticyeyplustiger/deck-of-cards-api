@@ -2,119 +2,229 @@ package org.example;
 
 import com.google.gson.*;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.*;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLConnection;
+import java.sql.SQLOutput;
 import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Main {
 
     public static Deck deck;
-    public static LinkedList<Card> playerCards = new LinkedList<>();
     public static GsonBuilder builder = new GsonBuilder();
     public static Gson gson;
     public static Scanner scan = new Scanner(System.in);
 
-    public static GUI window = new GUI();
+    //public static GUI window = new GUI();
 
-    public static double money = 250.0;
-    public static double bettingMoney;
+    public static Player player;
+    public static Dealer dealer;
+    public static boolean hasNatural = true;
+    public static boolean didDouble = false;
+    public static boolean isStanding = false;
 
     public static void main(String[] args) {
 
-        window.hitButton.addActionListener(e -> hit());
+        //window.hitButton.addActionListener(e -> hit());
 
         builder.setPrettyPrinting();
         gson = builder.create();
 
-        Scanner shuffledDeckScan = new Scanner(getShuffledDeck());
-        String shuffledDeck = shuffledDeckScan.useDelimiter("\\A").next();
+        deck = getShuffledDeck();
 
-        deck = gson.fromJson(shuffledDeck, Deck.class);
+        player = new Player(deck);
+        dealer = new Dealer(deck);
+
+        player.initializeHand();
+        dealer.initializeHand();
+
+        playOneRound();
     }
 
-    private static void play(){
+    private static void playOneRound(){
 
-        //hitButton.addActionListener(e -> hit());
-        //standButton.addActionListener(e -> stand());
-        //doubleButton.addActionListener(e -> doubleBet());
-        //splitButton.addActionListener(e -> split());
+        boolean playerLoss = false;
+        int currentRound = 0;
 
+        player.bettingMoney = getBettingMoney();
 
-        /*
-        Enemy enemy = new Enemy();
+        //region deal with naturals
+        switch (checkForNatural()) {
 
-        playerCards.add(getCard());
-        enemy.cards.add(getCard());
-        playerCards.add(getCard());
-        enemy.cards.add(getCard());
-
-        System.out.println("welcome to blackjack.");
-        System.out.println("in this game, you have to get as close to 21 as possible without going over 21.");
-        System.out.println("how much would you like to bet?\n");
-
-        System.out.println("your money: " + money);
-
-        bettingMoney = getBettingMoney();
-
-        System.out.println("ok\n");
-
-
-        while(true){
-
-            System.out.println("your cards\n");
-
-            printCards(playerCards);
-
-            System.out.println("their cards\n");
-
-            printCards(enemy.cards);
-
-            System.out.println("add another card?\n[YES, NO]");
-
-            if(scan.nextLine().equalsIgnoreCase("Yes")){
-                System.out.println("ok!");
-                playerCards.add(getCard());
+            case PLAYER_NATURAL -> {
+                player.winMoney(1.5);
+                System.out.println("Natural Win!\n\nMoney: " + player.money + "\n\n");
             }
 
-            enemy.cards.add(getCard());
+            case DEALER_NATURAL -> {
+                player.bettingMoney = 0;
+                System.out.println("Natural Loss!\n\nMoney: " + player.money + "\n\n");
+            }
 
-            roundIsOver(enemy);
+            case BOTH_NATURAL -> {
+                player.money += player.bettingMoney;
+                player.bettingMoney = 0;
+                System.out.println("Both Naturals! No money lost.\n\nMoney: " + player.money + "\n\n");
+            }
+
+            default -> {
+                hasNatural = false;
+            }
+        }
+
+        if(hasNatural) {
+            player.resetCards();
+            dealer.resetCards();
+            playOneRound();
+        }
+
+        hasNatural = true;
+        //endregion
+
+        while(currentRound < 5){
+
+            System.out.println("Dealers cards:");
+
+            if(currentRound == 0) {
+                dealer.printCards();
+            }
+            else{
+                dealer.printAllCards();
+            }
+
+            System.out.println("Your cards:");
+            player.printCards();
+
+            if(!didDouble){
+                playerMove(currentRound);
+                playerLoss = player.checkForLoss();
+            }
+
+            if(dealer.checkIfHasToHit()){
+                dealer.addCard();
+            }
+            if((didDouble || isStanding || playerLoss) && !(dealer.checkIfHasToHit())){
+                printEndResults( whoWon() );
+                return;
+            }
+
+            currentRound++;
 
         }
-         */
+
+    }
+
+    private static void printEndResults(MatchEnd matchEnd){
+
+        switch (matchEnd){
+            case PUSH -> {
+                System.out.println("Push. No money lost.");
+                player.money += player.bettingMoney;
+                player.bettingMoney = 0;
+            }
+            case PLAYER_WIN, PLAYER_BLACKJACK -> {
+                System.out.println("You won twice your bet!");
+                player.money += (player.bettingMoney * 2);
+                player.bettingMoney = 0;
+            }
+            case DEALER_WIN, DEALER_BLACKJACK -> {
+                System.out.println("You lost your bet!");
+                player.bettingMoney = 0;
+            }
+        }
+
+    }
+
+    private static void playerMove(int currentRound){
+
+        while(true) {
+
+            if (currentRound == 0) {
+                System.out.println("HIT[1], STAND[2], OR DOUBLE[3]?");
+            } else {
+                System.out.println("HIT[1] or STAND[2]?");
+            }
+
+            String answer = scan.nextLine();
+
+            switch (answer) {
+                case "1" -> hit();
+                case "2" -> isStanding = true;
+                case "3" -> {
+                    if (currentRound == 0) {
+                        doDouble();
+                    }
+                }
+                default -> {continue;}
+            }
+
+            break;
+        }
+    }
+
+    private static MatchEnd checkForNatural(){
+        MatchEnd endResults = whoWon();
+
+        switch(endResults){
+            case PLAYER_BLACKJACK -> {return MatchEnd.PLAYER_NATURAL;}
+            case DEALER_BLACKJACK -> {return MatchEnd.DEALER_NATURAL;}
+            case PUSH_BLACKJACK -> {return MatchEnd.BOTH_NATURAL;}
+            default -> {
+                hasNatural = false;
+                return MatchEnd.NO_NATURAL;
+            }
+        }
+    }
+
+    private static MatchEnd whoWon(){
+
+        int playerValue = player.getTotalValue();
+        int dealerValue = dealer.getTotalValue();
+
+        if(playerValue == 21 && dealerValue == 21){
+            return MatchEnd.PUSH_BLACKJACK;
+        }
+        else if(playerValue == 21){
+            return MatchEnd.PLAYER_BLACKJACK;
+        }
+        else if(dealerValue == 21){
+            return MatchEnd.DEALER_BLACKJACK;
+        }
+
+        if(playerValue == dealerValue){
+            return MatchEnd.PUSH;
+        }
+        else if(playerValue > dealerValue){
+            return MatchEnd.PLAYER_WIN;
+        }
+        else {
+            return MatchEnd.DEALER_WIN;
+        }
+    }
+
+    private static void doDouble(){
+        didDouble = true;
+        player.addCard();
 
     }
 
     private static void hit(){
 
-        playerCards.add(getCard());
-        Image image = playerCards.getLast().getCardImage();
-        window.addCardImageToBottom(image);
+        player.addCard();
+
+
+        //Image image = player.cards.getLast().getCardImage();
+        //window.addCardImageToBottom(image);
 
     }
 
 
-    private static void roundIsOver(Enemy enemy, int currentRound){
-        int playerStatus = getTotalValue(playerCards);
-        int enemyStatus = getTotalValue(enemy.cards);
-    }
+    private static void roundIsOver(int currentRound){
+        int playerValue = player.getTotalValue();
+        int enemyValue = dealer.getTotalValue();
 
-    private static int getTotalValue(LinkedList<Card> cards){
-        int totalValue = 0;
-        for(Card card : cards){
-            try{
-                totalValue += Integer.parseInt(card.value);
-            }
-            catch (NumberFormatException e) {
-                totalValue += 10;
-            }
-        }
-
-        return totalValue;
 
     }
 
@@ -125,11 +235,11 @@ public class Main {
     }
 
     private static double getBettingMoney(){
-        while(true){
+        //while(true){
             try{
                 double returningBettingMoney = Double.parseDouble(scan.nextLine());
 
-                if(returningBettingMoney > money){
+                if(returningBettingMoney > player.money){
                     System.out.println("you don't have that much money.");
                 }
                 else if(returningBettingMoney <= 0){
@@ -142,69 +252,22 @@ public class Main {
             } catch (NumberFormatException e) {
                 System.out.println("what?");
             }
-        }
+
+            return -10;
+        //}
     }
 
-    private static Card getCard(){
-
-        Scanner cardScan = new Scanner(getCardDetails());
-        String newCard = cardScan.useDelimiter("\\A").next();
-
-        JsonElement rootNode = JsonParser.parseString(newCard);
-
-        JsonObject deckDetails = rootNode.getAsJsonObject();
-        JsonArray cardDetails = deckDetails.getAsJsonArray("cards");
-
-        String cardValues = String.valueOf(cardDetails);
-        cardValues = removeBrackets(cardValues); //converts it from a json array to a json object
-
-        return gson.fromJson(cardValues, Card.class);
-    }
-
-    /**
-     * Removes brackets from a String.
-     * @param string The String having brackets removed.
-     * @return The string without brackets.
-     */
-    private static String removeBrackets(String string){
-
-        StringBuilder returningString = new StringBuilder();
-
-        for (int i = 0; i < string.length(); i++) {
-
-            char letter = string.charAt(i);
-
-            if(letter == '[' || letter == ']'){
-                continue;
-            }
-
-            returningString.append(letter);
-        }
-
-        return String.valueOf(returningString);
-    }
-
-    private static InputStream getCardDetails(){
+    public static Deck getShuffledDeck() {
         try {
-            URLConnection url = new URL
-                    ("https://www.deckofcardsapi.com/api/deck/" + deck.deck_id + "/draw/?count=1")
-                    .openConnection();
+            URLConnection url = new URI("https://www.deckofcardsapi.com/" +
+                    "api/deck/new/shuffle/?deck_count=6").toURL().openConnection();
 
-            return url.getInputStream();
+            Scanner shuffledDeckScan = new Scanner(url.getInputStream());
+            String shuffledDeck = shuffledDeckScan.useDelimiter("\\A").next();
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+            return gson.fromJson(shuffledDeck, Deck.class);
 
-    public static InputStream getShuffledDeck() {
-        try {
-            URLConnection url = new URL("https://www.deckofcardsapi.com/" +
-                    "api/deck/new/shuffle/?deck_count=6").openConnection();
-
-            return url.getInputStream();
-
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
