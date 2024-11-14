@@ -162,6 +162,10 @@ public class Player {
         }
     }
 
+    public boolean checkForBlackjack(){
+        return getTotalValue() == 21;
+    }
+
     /**
      * Adds two {@link Card}s to the player's hand.
      */
@@ -174,7 +178,9 @@ public class Player {
      * Empties the {@link Card}s in the player's hand and re-initializes them.
      */
     public void resetCards(){
-        cards = new LinkedList<>();
+        while(!cards.isEmpty()) {
+            cards.remove();
+        }
         initializeHand();
     }
 }

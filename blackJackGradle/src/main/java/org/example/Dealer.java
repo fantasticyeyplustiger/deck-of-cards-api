@@ -16,11 +16,19 @@ public class Dealer extends Player {
     }
 
     public void printCards(){
+        System.out.println("Dealers cards:");
         System.out.println("   " + cards.getFirst().value + " of " + cards.getFirst().suit);
-        System.out.println("   An Unknown Card");
+        System.out.println("   An Unknown Card\n");
     }
 
     public void printAllCards(){
+        System.out.println("Dealers cards:");
         super.printCards();
+    }
+
+    public void addCards(){
+        while(checkIfHasToHit()){
+            addCard();
+        }
     }
 }

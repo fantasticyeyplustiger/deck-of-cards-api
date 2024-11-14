@@ -3,16 +3,23 @@ package org.example;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class Card {
 
-    String code;
-    String image;
-    String value;
-    String suit;
+    final String code;
+    final String image;
+    final String value;
+    final String suit;
 
-    public Card(){}
+    public Card(String code, String image, String value, String suit){
+        this.code = code;
+        this.image = image;
+        this.value = value;
+        this.suit = suit;
+    }
 
     public Image getCardImage() {
         if(image == null){
@@ -20,10 +27,10 @@ public class Card {
         }
 
         try {
-            URL url = new URL(image);
+            URL url = new URI(image).toURL();
             return ImageIO.read(url);
         }
-        catch (IOException e) {
+        catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }

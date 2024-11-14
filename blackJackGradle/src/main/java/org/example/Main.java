@@ -6,7 +6,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
-import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Main {
@@ -22,7 +21,7 @@ public class Main {
     public static Dealer dealer;
     public static boolean hasNatural = true;
     public static boolean didDouble = false;
-    public static boolean isStanding = false;
+    public static boolean playerLoss = false;
 
     public static void main(String[] args) {
 
@@ -39,13 +38,20 @@ public class Main {
         player.initializeHand();
         dealer.initializeHand();
 
-        playOneRound();
+        //main game loop
+        while(deck.remaining > 10) {
+            playOneRound();
+            player.resetCards();
+            dealer.resetCards();
+            playerLoss = false;
+            didDouble = false;
+        }
     }
 
     private static void playOneRound(){
 
-        boolean playerLoss = false;
-        int currentRound = 0;
+        boolean firstRound = true;
+        boolean quit = false;
 
         player.bettingMoney = getBettingMoney();
 
@@ -62,15 +68,8 @@ public class Main {
                 System.out.println("Natural Loss!\n\nMoney: " + player.money + "\n\n");
             }
 
-            case BOTH_NATURAL -> {
-                player.money += player.bettingMoney;
-                player.bettingMoney = 0;
-                System.out.println("Both Naturals! No money lost.\n\nMoney: " + player.money + "\n\n");
-            }
+            default -> hasNatural = false;
 
-            default -> {
-                hasNatural = false;
-            }
         }
 
         if(hasNatural) {
@@ -82,34 +81,30 @@ public class Main {
         hasNatural = true;
         //endregion
 
-        while(currentRound < 5){
+        while(true){
 
-            System.out.println("Dealers cards:");
-
-            if(currentRound == 0) {
-                dealer.printCards();
-            }
-            else{
-                dealer.printAllCards();
-            }
+            dealer.printCards();
 
             System.out.println("Your cards:");
             player.printCards();
 
             if(!didDouble){
-                playerMove(currentRound);
-                playerLoss = player.checkForLoss();
+                quit = playerMove(firstRound);
             }
 
-            if(dealer.checkIfHasToHit()){
-                dealer.addCard();
+            if(quit){
+                break;
             }
-            if((didDouble || isStanding || playerLoss) && !(dealer.checkIfHasToHit())){
+
+            if((didDouble || playerLoss) && !(dealer.checkIfHasToHit())){
                 printEndResults( whoWon() );
                 return;
             }
+            else{
+                dealer.addCards();
+            }
 
-            currentRound++;
+            firstRound = false;
 
         }
 
@@ -117,30 +112,48 @@ public class Main {
 
     private static void printEndResults(MatchEnd matchEnd){
 
+        dealer.printAllCards();
+        System.out.println("Player's cards:");
+        player.printCards();
+
         switch (matchEnd){
             case PUSH -> {
                 System.out.println("Push. No money lost.");
-                player.money += player.bettingMoney;
-                player.bettingMoney = 0;
+                player.winMoney(1);
             }
-            case PLAYER_WIN, PLAYER_BLACKJACK -> {
-                System.out.println("You won twice your bet!");
-                player.money += (player.bettingMoney * 2);
-                player.bettingMoney = 0;
+            case PLAYER_WIN -> {
+                if(didDouble){
+                    System.out.println("You won FOUR times your bet!");
+                    player.winMoney(4);
+                }
+                else {
+                    System.out.println("You won twice your bet!");
+                    player.winMoney(2);
+                }
+            }
+            case PLAYER_BLACKJACK -> {
+                if(didDouble){
+                    System.out.println("You won SIX times your bet!");
+                    player.winMoney(6);
+                }
+                else {
+                    System.out.println("You won three times your bet!");
+                    player.winMoney(3);
+                }
             }
             case DEALER_WIN, DEALER_BLACKJACK -> {
                 System.out.println("You lost your bet!");
-                player.bettingMoney = 0;
+                player.winMoney(0);
             }
         }
 
     }
 
-    private static void playerMove(int currentRound){
+    private static boolean playerMove(boolean firstRound){
 
         while(true) {
 
-            if (currentRound == 0) {
+            if (firstRound) {
                 System.out.println("HIT[1], STAND[2], OR DOUBLE[3]?");
             } else {
                 System.out.println("HIT[1] or STAND[2]?");
@@ -149,31 +162,47 @@ public class Main {
             String answer = scan.nextLine();
 
             switch (answer) {
-                case "1" -> hit();
-                case "2" -> isStanding = true;
-                case "3" -> {
-                    if (currentRound == 0) {
+                case "1", "hit", "Hit", "HIT" -> hit();
+                case "2", "stand", "Stand", "STAND" -> {
+                    dealer.addCards();
+                    printEndResults(whoWon());
+                    return true;
+                }
+                case "3", "double", "Double", "DOUBLE" -> {
+                    if (firstRound) {
                         doDouble();
                     }
                 }
                 default -> {continue;}
             }
 
+            if(player.checkForLoss()){
+                printEndResults(MatchEnd.DEALER_WIN);
+                return true;
+            }
+            if(player.checkForBlackjack()){
+                printEndResults(MatchEnd.PLAYER_BLACKJACK);
+                return true;
+            }
+
             break;
         }
+        return false;
     }
 
     private static MatchEnd checkForNatural(){
-        MatchEnd endResults = whoWon();
 
-        switch(endResults){
-            case PLAYER_BLACKJACK -> {return MatchEnd.PLAYER_NATURAL;}
-            case DEALER_BLACKJACK -> {return MatchEnd.DEALER_NATURAL;}
-            case PUSH_BLACKJACK -> {return MatchEnd.BOTH_NATURAL;}
-            default -> {
-                hasNatural = false;
-                return MatchEnd.NO_NATURAL;
-            }
+        if(player.checkForBlackjack()){
+            return MatchEnd.PLAYER_NATURAL;
+        }
+        else if(dealer.cards.getFirst().value.equalsIgnoreCase("ACE")){
+            return MatchEnd.NO_NATURAL;
+        }
+        else if(dealer.checkForBlackjack()){
+            return MatchEnd.DEALER_NATURAL;
+        }
+        else{
+            return MatchEnd.NO_NATURAL;
         }
     }
 
@@ -182,23 +211,20 @@ public class Main {
         int playerValue = player.getTotalValue();
         int dealerValue = dealer.getTotalValue();
 
-        if(playerValue == 21 && dealerValue == 21){
-            return MatchEnd.PUSH_BLACKJACK;
-        }
-        else if(playerValue == 21){
-            return MatchEnd.PLAYER_BLACKJACK;
-        }
-        else if(dealerValue == 21){
-            return MatchEnd.DEALER_BLACKJACK;
-        }
-
         if(playerValue == dealerValue){
             return MatchEnd.PUSH;
+        }
+
+        if(player.checkForLoss()){
+            return MatchEnd.DEALER_WIN;
+        }
+        else if(dealer.checkForLoss()){
+            return MatchEnd.PLAYER_WIN;
         }
         else if(playerValue > dealerValue){
             return MatchEnd.PLAYER_WIN;
         }
-        else {
+        else{
             return MatchEnd.DEALER_WIN;
         }
     }
@@ -206,54 +232,35 @@ public class Main {
     private static void doDouble(){
         didDouble = true;
         player.addCard();
-
     }
 
     private static void hit(){
-
         player.addCard();
-
-
         //Image image = player.cards.getLast().getCardImage();
         //window.addCardImageToBottom(image);
-
-    }
-
-
-    private static void roundIsOver(int currentRound){
-        int playerValue = player.getTotalValue();
-        int enemyValue = dealer.getTotalValue();
-
-
-    }
-
-    public static void printCards(LinkedList<Card> cards){
-        for (Card card : cards) {
-            System.out.println(card.code + ", " + card.value);
-        }
     }
 
     private static double getBettingMoney(){
-        //while(true){
+        while(true){
             try{
+                System.out.println("How much do you want to bet? Current money: " + player.money);
                 double returningBettingMoney = Double.parseDouble(scan.nextLine());
 
                 if(returningBettingMoney > player.money){
-                    System.out.println("you don't have that much money.");
+                    System.out.println("You don't have that much money.");
                 }
                 else if(returningBettingMoney <= 0){
-                    System.out.println("ah, yes, betting negative money.");
+                    System.out.println("You can't bet negative money.");
                 }
                 else{
+                    player.money -= returningBettingMoney;
                     return returningBettingMoney;
                 }
 
             } catch (NumberFormatException e) {
                 System.out.println("what?");
             }
-
-            return -10;
-        //}
+        }
     }
 
     public static Deck getShuffledDeck() {
