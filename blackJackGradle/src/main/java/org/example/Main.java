@@ -2,6 +2,7 @@ package org.example;
 
 import com.google.gson.*;
 
+import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,17 +16,15 @@ public class Main {
     public static Gson gson;
     public static Scanner scan = new Scanner(System.in);
 
-    //public static GUI window = new GUI();
+    public static GUI window = new GUI();
 
-    public static Player player;
-    public static Dealer dealer;
-    public static boolean hasNatural = true;
-    public static boolean didDouble = false;
-    public static boolean playerLoss = false;
+    private static Player player;
+    private static Dealer dealer;
+    private static boolean hasNatural = true;
+    private static boolean didDouble = false;
+    private static boolean playerLoss = false;
 
     public static void main(String[] args) {
-
-        //window.hitButton.addActionListener(e -> hit());
 
         builder.setPrettyPrinting();
         gson = builder.create();
@@ -40,9 +39,16 @@ public class Main {
 
         //main game loop
         while(deck.remaining > 10) {
+
+            if(player.money <= 0){
+                System.out.println("Get yo broke ahh out of here");
+                System.exit(69);
+            }
+
             playOneRound();
             player.resetCards();
             dealer.resetCards();
+
             playerLoss = false;
             didDouble = false;
         }
@@ -122,6 +128,7 @@ public class Main {
                 player.winMoney(1);
             }
             case PLAYER_WIN -> {
+
                 if(didDouble){
                     System.out.println("You won FOUR times your bet!");
                     player.winMoney(4);
@@ -130,8 +137,10 @@ public class Main {
                     System.out.println("You won twice your bet!");
                     player.winMoney(2);
                 }
+
             }
             case PLAYER_BLACKJACK -> {
+
                 if(didDouble){
                     System.out.println("You won SIX times your bet!");
                     player.winMoney(6);
@@ -140,10 +149,19 @@ public class Main {
                     System.out.println("You won three times your bet!");
                     player.winMoney(3);
                 }
+
             }
             case DEALER_WIN, DEALER_BLACKJACK -> {
-                System.out.println("You lost your bet!");
-                player.winMoney(0);
+
+                if(didDouble){
+                    System.out.println("You lost twice your bet...");
+                    player.winMoney(-1);
+                }
+                else {
+                    System.out.println("You lost your bet!");
+                    player.winMoney(0);
+                }
+
             }
         }
 
@@ -236,8 +254,8 @@ public class Main {
 
     private static void hit(){
         player.addCard();
-        //Image image = player.cards.getLast().getCardImage();
-        //window.addCardImageToBottom(image);
+        Image image = player.cards.getLast().getCardImage();
+        window.addCardImageToBottom(image);
     }
 
     private static double getBettingMoney(){
