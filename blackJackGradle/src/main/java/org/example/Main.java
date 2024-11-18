@@ -34,6 +34,8 @@ public class Main {
         player = new Player(deck, window);
         dealer = new Dealer(deck, window);
 
+        window.player = player;
+
         player.initializeHand();
         dealer.initializeHand();
 

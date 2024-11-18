@@ -5,6 +5,8 @@ import java.awt.*;
 
 public class GUI extends JFrame {
 
+    Player player;
+
     JSplitPane mainArea = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     JSplitPane dialogueAndPlayArea = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     JSplitPane cardAreas = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -16,8 +18,11 @@ public class GUI extends JFrame {
     public JPanel bottomCardArea = new JPanel();
     public JPanel topCardArea = new JPanel();
     public JPanel playOptionsArea = new JPanel();
+    public JPanel bettingMoneyArea = new JPanel();
 
-    public JTextArea dialogue = new JTextArea();
+    public JLabel currentMoney = new JLabel("Money: 2500");
+    public JLabel bettingMoney = new JLabel("Betting money: ");
+    public JTextField insertBettingMoney = new JTextField(6);
 
     public GUI(){
 
@@ -84,6 +89,19 @@ public class GUI extends JFrame {
 
         topCardArea.setLayout(horizontalLayout);
         bottomCardArea.setLayout(horizontalLayout);
+
+        insertBettingMoney.addActionListener(e -> getBettingMoney());
+    }
+
+    public void getBettingMoney(){
+        try{
+            String text = insertBettingMoney.getText();
+            player.bettingMoney = Double.parseDouble(text);
+            player.money = 0;
+        }
+        catch (NumberFormatException e){
+            insertBettingMoney.setText("0");
+        }
     }
 
     private void setSplitPaneComponents(){
@@ -101,7 +119,12 @@ public class GUI extends JFrame {
     }
 
     private void addComponents(){
-        dialogueArea.add(dialogue);
+        dialogueArea.add(currentMoney);
+
+        bettingMoneyArea.add(bettingMoney);
+        bettingMoneyArea.add(insertBettingMoney);
+
+        dialogueArea.add(bettingMoneyArea);
 
         playOptionsArea.add(hitButton);
         playOptionsArea.add(standButton);
