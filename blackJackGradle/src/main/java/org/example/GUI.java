@@ -47,11 +47,16 @@ public class GUI extends JFrame {
     public void addCardImageToTop(Image image){
         JLabel label = new JLabel(new ImageIcon(image));
         topCardArea.add(label);
+        repaint();
+        revalidate();
     }
 
     public void addCardImageToBottom(Image image){
         JLabel label = new JLabel(new ImageIcon(image));
+        label.setVisible(true);
         bottomCardArea.add(label);
+        repaint();
+        revalidate();
     }
 
     private JButton buttonSetUp(String text){

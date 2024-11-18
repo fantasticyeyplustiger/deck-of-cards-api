@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -21,13 +22,15 @@ public class Player {
     LinkedList<Card> cards = new LinkedList<>();
     double money = 2500.0;
     double bettingMoney;
+    GUI window;
 
     /**
      * For convenience.
      * @param deck The {@link Deck} that cards will be drawing from.
      */
-    public Player(Deck deck){
+    public Player(Deck deck, GUI window){
         this.deck = deck;
+        this.window = window;
     }
 
     public boolean checkForLoss(){
@@ -116,7 +119,15 @@ public class Player {
         String cardValues = String.valueOf(cardDetails);
         cardValues = removeBrackets(cardValues); //converts it from a json array to a json object
 
-        cards.add(gson.fromJson(cardValues, Card.class));
+        Card newCard = gson.fromJson(cardValues, Card.class);
+
+        cards.add(newCard);
+        addCardImage(newCard);
+    }
+
+    public void addCardImage(Card card){
+        Image image = card.getCardImage();
+        window.addCardImageToBottom(image);
     }
 
     /**
@@ -178,9 +189,14 @@ public class Player {
      * Empties the {@link Card}s in the player's hand and re-initializes them.
      */
     public void resetCards(){
+        removeCards();
+        window.bottomCardArea.removeAll();
+        initializeHand();
+    }
+
+    protected void removeCards(){
         while(!cards.isEmpty()) {
             cards.remove();
         }
-        initializeHand();
     }
 }

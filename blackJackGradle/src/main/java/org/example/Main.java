@@ -31,8 +31,8 @@ public class Main {
 
         deck = getShuffledDeck();
 
-        player = new Player(deck);
-        dealer = new Dealer(deck);
+        player = new Player(deck, window);
+        dealer = new Dealer(deck, window);
 
         player.initializeHand();
         dealer.initializeHand();
@@ -46,6 +46,16 @@ public class Main {
             }
 
             playOneRound();
+
+            System.out.println("Continue?");
+
+            if(scan.nextLine().equalsIgnoreCase("NO")){
+                System.exit(69);
+            }
+            else{
+                System.out.println("alright bet");
+            }
+
             player.resetCards();
             dealer.resetCards();
 
@@ -58,6 +68,8 @@ public class Main {
 
         boolean firstRound = true;
         boolean quit = false;
+
+        dealer.showFirstCards();
 
         player.bettingMoney = getBettingMoney();
 
@@ -119,6 +131,7 @@ public class Main {
     private static void printEndResults(MatchEnd matchEnd){
 
         dealer.printAllCards();
+        dealer.showHand();
         System.out.println("Player's cards:");
         player.printCards();
 
@@ -254,8 +267,6 @@ public class Main {
 
     private static void hit(){
         player.addCard();
-        Image image = player.cards.getLast().getCardImage();
-        window.addCardImageToBottom(image);
     }
 
     private static double getBettingMoney(){

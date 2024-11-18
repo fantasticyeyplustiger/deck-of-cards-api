@@ -1,9 +1,19 @@
 package org.example;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+
 public class Dealer extends Player {
 
-    public Dealer(Deck deck) {
-        super(deck);
+    ArrayList<Image> cardImages = new ArrayList<>();
+
+    public Dealer(Deck deck, GUI window) {
+        super(deck, window);
     }
 
     /**
@@ -29,6 +39,46 @@ public class Dealer extends Player {
     public void addCards(){
         while(checkIfHasToHit()){
             addCard();
+        }
+    }
+
+    public void showFirstCards(){
+        window.addCardImageToTop(cardImages.getFirst());
+        window.addCardImageToTop(backOfCard());
+    }
+
+    public void showHand(){
+        window.topCardArea.removeAll();
+        for(Image image : cardImages){
+            window.addCardImageToTop(image);
+        }
+    }
+
+    public void addCardImage(Card card){
+        Image image = card.getCardImage();
+        cardImages.add(image);
+    }
+
+    public void resetCards(){
+        removeCards();
+        window.topCardArea.removeAll();
+        initializeHand();
+    }
+
+    private Image backOfCard(){
+        try {
+            URL url = new URI("https://deckofcardsapi.com/static/img/back.png").toURL();
+            return ImageIO.read(url);
+        }
+        catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void removeCards(){
+        while(!cards.isEmpty()) {
+            cards.remove();
+            cardImages.removeLast();
         }
     }
 }
