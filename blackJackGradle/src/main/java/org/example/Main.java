@@ -26,6 +26,9 @@ public class Main {
 
     public static void main(String[] args) {
 
+        window.hitButton.addActionListener(e -> hit());
+        window.standButton.addActionListener(e -> stand());
+
         builder.setPrettyPrinting();
         gson = builder.create();
 
@@ -197,8 +200,7 @@ public class Main {
             switch (answer) {
                 case "1", "hit", "Hit", "HIT" -> hit();
                 case "2", "stand", "Stand", "STAND" -> {
-                    dealer.addCards();
-                    printEndResults(whoWon());
+                    stand();
                     return true;
                 }
                 case "3", "double", "Double", "DOUBLE" -> {
@@ -269,6 +271,11 @@ public class Main {
 
     private static void hit(){
         player.addCard();
+    }
+
+    private static void stand(){
+        dealer.addCards();
+        printEndResults(whoWon());
     }
 
     private static double getBettingMoney(){
